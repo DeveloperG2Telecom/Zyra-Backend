@@ -20,7 +20,7 @@ app.use(helmet());
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? ['https://zyra.g2telecom.com'] 
-    : ['http://localhost:3000', 'http://localhost:3001'],
+    : ['http://localhost:3000', 'http://localhost:3001', 'null'], // Permite arquivos locais
   credentials: true
 }));
 
