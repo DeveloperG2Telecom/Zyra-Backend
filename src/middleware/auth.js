@@ -18,7 +18,8 @@ const authenticateToken = async (req, res, next) => {
     }
 
     // Verificar token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const jwtSecret = process.env.JWT_SECRET || 'zyra-super-secret-jwt-key-for-development-only';
+    const decoded = jwt.verify(token, jwtSecret);
     
     // Buscar usuário no banco
     const user = await User.findById(decoded.id);
@@ -133,7 +134,8 @@ const optionalAuth = async (req, res, next) => {
     const token = authHeader && authHeader.split(' ')[1];
 
     if (token) {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const jwtSecret = process.env.JWT_SECRET || 'zyra-super-secret-jwt-key-for-development-only';
+      const decoded = jwt.verify(token, jwtSecret);
       const user = await User.findById(decoded.id);
       
       if (user && user.ativo) {

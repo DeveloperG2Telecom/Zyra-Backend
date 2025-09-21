@@ -1,5 +1,10 @@
 const { db } = require('./firebase');
 
+// Verificar se o Firebase está configurado
+if (!db) {
+  console.warn('⚠️  Firebase não disponível. Algumas funcionalidades podem não funcionar.');
+}
+
 // Coleções do Firestore
 const COLLECTIONS = {
   USERS: 'users',
@@ -15,6 +20,10 @@ const COLLECTIONS = {
 class Database {
   // Criar documento
   static async create(collection, data) {
+    if (!db) {
+      throw new Error('Firebase não configurado. Não é possível criar documentos.');
+    }
+    
     try {
       const docRef = await db.collection(collection).add({
         ...data,
@@ -29,6 +38,10 @@ class Database {
 
   // Buscar por ID
   static async findById(collection, id) {
+    if (!db) {
+      throw new Error('Firebase não configurado. Não é possível buscar documentos.');
+    }
+    
     try {
       const doc = await db.collection(collection).doc(id).get();
       if (!doc.exists) {
@@ -42,6 +55,10 @@ class Database {
 
   // Buscar todos com filtros
   static async findAll(collection, filters = {}) {
+    if (!db) {
+      throw new Error('Firebase não configurado. Não é possível buscar documentos.');
+    }
+    
     try {
       let query = db.collection(collection);
       
