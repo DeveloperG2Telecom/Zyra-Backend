@@ -10,6 +10,8 @@ const { apiLimiter } = require('./middleware/rateLimiter');
 // Importar rotas
 const authRoutes = require('./routes/auth');
 const equipamentosRoutes = require('./routes/equipamentos');
+const popsRoutes = require('./routes/pops');
+const redesRuraisRoutes = require('./routes/redesRurais');
 const cidadesRoutes = require('./routes/cidades');
 const dashboardRoutes = require('./routes/dashboard');
 
@@ -20,7 +22,7 @@ app.use(helmet());
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? ['https://zyra.g2telecom.com'] 
-    : ['http://localhost:3000', 'http://localhost:3001', 'null'], // Permite arquivos locais
+    : ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:10000', 'null'], // Permite arquivos locais
   credentials: true
 }));
 
@@ -40,6 +42,8 @@ app.use((req, res, next) => {
 // Rotas da API
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/equipamentos', equipamentosRoutes);
+app.use('/api/v1/pops', popsRoutes);
+app.use('/api/v1/redes-rurais', redesRuraisRoutes);
 app.use('/api/v1/cidades', cidadesRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
 
@@ -62,6 +66,8 @@ app.get('/', (req, res) => {
     endpoints: {
       auth: '/api/v1/auth',
       equipamentos: '/api/v1/equipamentos',
+      pops: '/api/v1/pops',
+      redesRurais: '/api/v1/redes-rurais',
       cidades: '/api/v1/cidades',
       dashboard: '/api/v1/dashboard',
       health: '/api/v1/health'

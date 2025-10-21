@@ -30,8 +30,10 @@ const initializeFirebase = () => {
         projectId: process.env.FIREBASE_PROJECT_ID,
       });
       console.log('✅ Firebase inicializado com sucesso');
+      console.log('📊 Project ID:', process.env.FIREBASE_PROJECT_ID);
     } catch (error) {
       console.error('❌ Erro ao inicializar Firebase:', error.message);
+      console.error('🔍 Detalhes do erro:', error);
       return {
         db: null,
         storage: null,

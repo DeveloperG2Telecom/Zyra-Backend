@@ -46,7 +46,7 @@ router.get('/', authenticateToken, requireUser, asyncHandler(async (req, res) =>
   }));
 
   // Buscar equipamentos recentes (últimos 5)
-  const equipamentosRecentes = await Equipamento.findAll({ ativo: true });
+  const equipamentosRecentes = await Equipamento.findAllEquipamentos({ ativo: true });
   equipamentosRecentes.sort((a, b) => new Date(b.criadoEm) - new Date(a.criadoEm));
   const ultimosEquipamentos = equipamentosRecentes.slice(0, 5).map(equipamento => ({
     id: equipamento.id,

@@ -3,12 +3,16 @@ const { db } = require('./firebase');
 // Verificar se o Firebase está configurado
 if (!db) {
   console.warn('⚠️  Firebase não disponível. Algumas funcionalidades podem não funcionar.');
+} else {
+  console.log('✅ Firebase Firestore disponível');
 }
 
 // Coleções do Firestore
 const COLLECTIONS = {
   USERS: 'users',
   EQUIPAMENTOS: 'equipamentos',
+  POPS: 'pops',
+  REDES_RURAIS: 'redesRurais',
   CIDADES: 'cidades',
   LOCAIS: 'locais',
   TIPOS_EQUIPAMENTO: 'tiposEquipamento',
