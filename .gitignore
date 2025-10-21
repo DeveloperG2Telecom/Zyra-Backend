@@ -118,6 +118,11 @@ Thumbs.db
 .firebase/
 firebase-debug.log
 firebase-debug.*.log
+*-firebase-adminsdk-*.json
+firebase-adminsdk-*.json
+*.json
+!package.json
+!package-lock.json
 
 # Local development files
 serve-test-page.js
