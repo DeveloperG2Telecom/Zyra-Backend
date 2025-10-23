@@ -18,6 +18,9 @@ const COLLECTIONS = {
   TIPOS_EQUIPAMENTO: 'tiposEquipamento',
   ALERTAS: 'alertas',
   CONFIGURACOES: 'configuracoes',
+  // Dados mestres para configurações
+  TIPOS_ACESSO: 'tiposAcesso',
+  FUNCOES: 'funcoes',
 };
 
 // Funções auxiliares para o banco

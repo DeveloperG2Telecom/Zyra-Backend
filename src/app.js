@@ -10,10 +10,10 @@ const { apiLimiter } = require('./middleware/rateLimiter');
 // Importar rotas
 const authRoutes = require('./routes/auth');
 const equipamentosRoutes = require('./routes/equipamentos');
-const popsRoutes = require('./routes/pops');
 const redesRuraisRoutes = require('./routes/redesRurais');
 const cidadesRoutes = require('./routes/cidades');
 const dashboardRoutes = require('./routes/dashboard');
+const configuracoesRoutes = require('./routes/configuracoes');
 
 const app = express();
 
@@ -42,10 +42,10 @@ app.use((req, res, next) => {
 // Rotas da API
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/equipamentos', equipamentosRoutes);
-app.use('/api/v1/pops', popsRoutes);
 app.use('/api/v1/redes-rurais', redesRuraisRoutes);
 app.use('/api/v1/cidades', cidadesRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
+app.use('/api/v1/configuracoes', configuracoesRoutes);
 
 // Rota de health check
 app.get('/api/v1/health', (req, res) => {
@@ -66,10 +66,10 @@ app.get('/', (req, res) => {
     endpoints: {
       auth: '/api/v1/auth',
       equipamentos: '/api/v1/equipamentos',
-      pops: '/api/v1/pops',
       redesRurais: '/api/v1/redes-rurais',
       cidades: '/api/v1/cidades',
       dashboard: '/api/v1/dashboard',
+      configuracoes: '/api/v1/configuracoes',
       health: '/api/v1/health'
     }
   });
