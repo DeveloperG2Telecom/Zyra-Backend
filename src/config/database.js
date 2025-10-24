@@ -18,6 +18,7 @@ const COLLECTIONS = {
   TIPOS_EQUIPAMENTO: 'tiposEquipamento',
   ALERTAS: 'alertas',
   CONFIGURACOES: 'configuracoes',
+  BACKUPS: 'backups',
   // Dados mestres para configurações
   TIPOS_ACESSO: 'tiposAcesso',
   FUNCOES: 'funcoes',

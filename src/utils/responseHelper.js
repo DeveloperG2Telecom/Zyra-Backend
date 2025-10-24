@@ -44,7 +44,15 @@ const asyncHandler = (fn) => {
   };
 };
 
+// Função auxiliar para criar resposta simples
+const createResponse = (success, message, data = null) => {
+  const response = { success, message };
+  if (data !== null) response.data = data;
+  return response;
+};
+
 module.exports = {
   ResponseHelper,
-  asyncHandler
+  asyncHandler,
+  createResponse
 };

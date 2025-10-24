@@ -14,6 +14,7 @@ const redesRuraisRoutes = require('./routes/redesRurais');
 const cidadesRoutes = require('./routes/cidades');
 const dashboardRoutes = require('./routes/dashboard');
 const configuracoesRoutes = require('./routes/configuracoes');
+const backupsRoutes = require('./routes/backups');
 
 const app = express();
 
@@ -46,6 +47,7 @@ app.use('/api/v1/redes-rurais', redesRuraisRoutes);
 app.use('/api/v1/cidades', cidadesRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
 app.use('/api/v1/configuracoes', configuracoesRoutes);
+app.use('/api/v1/backups', backupsRoutes);
 
 // Rota de health check
 app.get('/api/v1/health', (req, res) => {
@@ -70,6 +72,7 @@ app.get('/', (req, res) => {
       cidades: '/api/v1/cidades',
       dashboard: '/api/v1/dashboard',
       configuracoes: '/api/v1/configuracoes',
+      backups: '/api/v1/backups',
       health: '/api/v1/health'
     }
   });
