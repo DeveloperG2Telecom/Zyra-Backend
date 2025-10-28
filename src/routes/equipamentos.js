@@ -6,30 +6,81 @@ const { ResponseHelper, asyncHandler } = require('../utils/responseHelper');
 
 const router = express.Router();
 
-// GET /equipamentos - Listar todos os equipamentos (SIMPLIFICADO)
+// GET /equipamentos - Listar equipamentos com paginação
 router.get('/', asyncHandler(async (req, res) => {
-  console.log('🔍 BACKEND: Recebida requisição GET /equipamentos');
-  console.log('🔍 BACKEND: Query params:', req.query);
-  
   try {
-    // Buscar TODOS os equipamentos sem filtros complexos
-    const { Database, COLLECTIONS } = require('../config/database');
+    console.log('🚀 EQUIPAMENTOS ROUTE: ===== INICIANDO REQUISIÇÃO =====');
+    console.log('🚀 EQUIPAMENTOS ROUTE: Query params recebidos:', req.query);
+    console.log('🚀 EQUIPAMENTOS ROUTE: Headers:', req.headers);
     
-    console.log('🔍 BACKEND: Fazendo consulta direta no banco...');
-    const equipamentos = await Database.findAll(COLLECTIONS.EQUIPAMENTOS, {});
+    const databaseModule = require('../config/database');
+    const { Database, COLLECTIONS } = databaseModule;
+    console.log('🚀 EQUIPAMENTOS ROUTE: Database e COLLECTIONS carregados');
+    console.log('🚀 EQUIPAMENTOS ROUTE: COLLECTIONS.EQUIPAMENTOS:', COLLECTIONS.EQUIPAMENTOS);
+    console.log('🚀 EQUIPAMENTOS ROUTE: Tipo de COLLECTIONS.EQUIPAMENTOS:', typeof COLLECTIONS.EQUIPAMENTOS);
     
-    console.log('🔍 BACKEND: Equipamentos encontrados no banco:', equipamentos?.length || 0);
-    console.log('🔍 BACKEND: Dados brutos do banco:', equipamentos);
+    // Validar se a coleção está definida
+    if (!COLLECTIONS.EQUIPAMENTOS || typeof COLLECTIONS.EQUIPAMENTOS !== 'string') {
+      console.error('❌ EQUIPAMENTOS ROUTE: Coleção EQUIPAMENTOS inválida:', COLLECTIONS.EQUIPAMENTOS);
+      throw new Error('Coleção EQUIPAMENTOS não está definida corretamente');
+    }
     
-    // Retornar dados simples
-    res.json({
-      success: true,
-      data: equipamentos || [],
-      message: `Encontrados ${equipamentos?.length || 0} equipamentos`
+    // Parâmetros de paginação
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const offset = (page - 1) * limit;
+    
+    console.log('🚀 EQUIPAMENTOS ROUTE: Parâmetros calculados - Page:', page, 'Limit:', limit, 'Offset:', offset);
+    
+    // Buscar equipamentos com paginação
+    console.log('🚀 EQUIPAMENTOS ROUTE: Chamando Database.findWithPagination...');
+    console.log('🚀 EQUIPAMENTOS ROUTE: Argumentos - Collection:', COLLECTIONS.EQUIPAMENTOS, 'Filters:', {}, 'Limit:', limit, 'Offset:', offset);
+    
+    const result = await Database.findWithPagination(COLLECTIONS.EQUIPAMENTOS, {}, limit, offset);
+    
+    console.log('🚀 EQUIPAMENTOS ROUTE: ===== RESULTADO RECEBIDO =====');
+    console.log('🚀 EQUIPAMENTOS ROUTE: Resultado completo:', JSON.stringify(result, null, 2));
+    console.log('🚀 EQUIPAMENTOS ROUTE: Total de itens:', result.total);
+    console.log('🚀 EQUIPAMENTOS ROUTE: Dados encontrados:', result.data?.length || 0);
+    console.log('🚀 EQUIPAMENTOS ROUTE: Primeiros 3 itens:', result.data?.slice(0, 3) || 'Nenhum item');
+    
+    // Calcular metadados de paginação
+    const totalItems = result.total || 0;
+    const totalPages = Math.ceil(totalItems / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+    
+    console.log('🚀 EQUIPAMENTOS ROUTE: Metadados de paginação calculados:', {
+      totalItems,
+      totalPages,
+      hasNextPage,
+      hasPrevPage
     });
     
+    const response = {
+      success: true,
+      data: result.data || [],
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalItems,
+        itemsPerPage: limit,
+        hasNextPage,
+        hasPrevPage
+      },
+      message: `Encontrados ${result.data?.length || 0} equipamentos na página ${page}`
+    };
+    
+    console.log('🚀 EQUIPAMENTOS ROUTE: ===== ENVIANDO RESPOSTA =====');
+    console.log('🚀 EQUIPAMENTOS ROUTE: Resposta final:', JSON.stringify(response, null, 2));
+    
+    res.json(response);
+    
   } catch (error) {
-    console.error('❌ BACKEND: Erro ao buscar equipamentos:', error);
+    console.error('❌ EQUIPAMENTOS ROUTE: ===== ERRO CAPTURADO =====');
+    console.error('❌ EQUIPAMENTOS ROUTE: Erro:', error.message);
+    console.error('❌ EQUIPAMENTOS ROUTE: Stack trace:', error.stack);
+    
     res.status(500).json({
       success: false,
       error: error.message,
@@ -47,7 +98,12 @@ router.get('/:id', asyncHandler(async (req, res) => {
 
 // POST /equipamentos - Criar novo equipamento
 router.post('/', validate('equipamento'), asyncHandler(async (req, res) => {
+  console.log('🔍 BACKEND: Recebida requisição POST /equipamentos');
+  console.log('🔍 BACKEND: Dados recebidos:', req.body);
+  
   const equipamento = await Equipamento.createEquipamento(req.body);
+  console.log('✅ BACKEND: Equipamento criado com sucesso:', equipamento);
+  
   ResponseHelper.success(res, equipamento, null, 201);
 }));
 

@@ -18,7 +18,7 @@ const authenticateToken = async (req, res, next) => {
     }
 
     // Suporte para token mock durante desenvolvimento
-    if (token === 'mock-token-for-development') {
+    if (token.startsWith('mock-token-')) {
       req.user = {
         id: 'mock-user-id',
         email: 'dev@example.com',

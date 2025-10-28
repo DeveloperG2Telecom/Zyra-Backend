@@ -20,32 +20,29 @@ const schemas = {
     senha: Joi.string().min(6)
   }),
 
-  // Equipamentos
-         equipamento: Joi.object({
-           nome: Joi.string().min(2).max(100).required(),
-           tipo: Joi.string().valid('MIKROTIK', 'MK CONCENTRADOR', 'RADIO PTP', 'AP', 'MIMOSA', 'OLT', 'ROTEADOR', 'OUTROS').required(),
-           modelo: Joi.string().min(2).max(100).allow(null).optional(),
-    serialMac: Joi.string().min(2).max(100).allow(null).optional(),
-    ipPublico: Joi.string().ip().allow(null).optional(),
-    ipPrivado: Joi.string().ip().allow(null).optional(),
-    localidade: Joi.object({
-      lat: Joi.number().min(-90).max(90).allow(null).optional(),
-      lng: Joi.number().min(-180).max(180).allow(null).optional(),
-      endereco: Joi.string().min(2).max(200).allow(null).optional()
-    }).allow(null).optional(),
-    quantidadePortas: Joi.string().min(1).max(10).allow(null).optional(),
-    equipamentoAnterior: Joi.string().allow(null).optional(),
-    alimentacao: Joi.string().min(2).max(100).allow(null).optional(),
-    dataAquisicao: Joi.date().max('now').allow(null).optional(),
-    tempoGarantia: Joi.string().min(2).max(50).allow(null).optional(),
-    versaoFirmware: Joi.string().min(1).max(50).allow(null).optional(),
-    equipamentoPosterior: Joi.string().allow(null).optional(),
-    fotoEquipamento: Joi.string().allow(null).optional(),
-    pop: Joi.string().allow(null).optional(),
-    redeRural: Joi.string().allow(null).optional(),
-    modoAcesso: Joi.string().min(2).max(50).allow(null).optional(),
-    funcoes: Joi.array().items(Joi.string().min(2).max(50)).allow(null).optional(),
-    status: Joi.string().valid('Ativo', 'Em Manutenção', 'Reserva', 'Descartado', 'Em Teste').default('Ativo').allow(null).optional()
+  // Equipamentos - Schema ultra simplificado para debug
+  equipamento: Joi.object({
+    nome: Joi.string().required(),
+    tipo: Joi.string().required(),
+    modelo: Joi.any().optional(),
+    serialMac: Joi.any().optional(),
+    ipPublico: Joi.any().optional(),
+    ipPrivado: Joi.any().optional(),
+    localidade: Joi.any().optional(),
+    quantidadePortas: Joi.any().optional(),
+    equipamentoAnterior: Joi.any().optional(),
+    alimentacao: Joi.any().optional(),
+    dataAquisicao: Joi.any().optional(),
+    tempoGarantia: Joi.any().optional(),
+    versaoFirmware: Joi.any().optional(),
+    equipamentoPosterior: Joi.any().optional(),
+    fotoEquipamento: Joi.any().optional(),
+    pop: Joi.any().optional(),
+    redeRural: Joi.any().optional(),
+    modoAcesso: Joi.any().optional(),
+    funcoes: Joi.any().optional(),
+    status: Joi.any().optional(),
+    observacoes: Joi.any().optional()
   }),
 
   // POPs
@@ -128,9 +125,12 @@ const validate = (schemaName, property = 'body') => {
       });
     }
 
+    console.log('🔍 VALIDATION: Validando dados:', JSON.stringify(req[property], null, 2));
+    
     const { error, value } = schema.validate(req[property], { abortEarly: false });
     
     if (error) {
+      console.error('❌ VALIDATION: Erro de validação:', error.details);
       return res.status(400).json({
         success: false,
         error: {
@@ -138,11 +138,14 @@ const validate = (schemaName, property = 'body') => {
           message: 'Dados inválidos',
           details: error.details.map(detail => ({
             field: detail.path.join('.'),
-            message: detail.message
+            message: detail.message,
+            value: detail.context?.value
           }))
         }
       });
     }
+    
+    console.log('✅ VALIDATION: Dados validados com sucesso');
 
     req[property] = value;
     next();

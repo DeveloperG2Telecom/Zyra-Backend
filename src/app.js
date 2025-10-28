@@ -12,7 +12,7 @@ const authRoutes = require('./routes/auth');
 const equipamentosRoutes = require('./routes/equipamentos');
 const redesRuraisRoutes = require('./routes/redesRurais');
 const cidadesRoutes = require('./routes/cidades');
-const dashboardRoutes = require('./routes/dashboard');
+// const dashboardRoutes = require('./routes/dashboard'); // Removido - dashboard agora usa dados diretos
 const configuracoesRoutes = require('./routes/configuracoes');
 const backupsRoutes = require('./routes/backups');
 
@@ -45,7 +45,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/equipamentos', equipamentosRoutes);
 app.use('/api/v1/redes-rurais', redesRuraisRoutes);
 app.use('/api/v1/cidades', cidadesRoutes);
-app.use('/api/v1/dashboard', dashboardRoutes);
+// app.use('/api/v1/dashboard', dashboardRoutes); // Removido - dashboard agora usa dados diretos
 app.use('/api/v1/configuracoes', configuracoesRoutes);
 app.use('/api/v1/backups', backupsRoutes);
 
@@ -70,7 +70,7 @@ app.get('/', (req, res) => {
       equipamentos: '/api/v1/equipamentos',
       redesRurais: '/api/v1/redes-rurais',
       cidades: '/api/v1/cidades',
-      dashboard: '/api/v1/dashboard',
+      // dashboard: '/api/v1/dashboard', // Removido - dashboard agora usa dados diretos
       configuracoes: '/api/v1/configuracoes',
       backups: '/api/v1/backups',
       health: '/api/v1/health'

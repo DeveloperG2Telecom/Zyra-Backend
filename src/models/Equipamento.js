@@ -18,6 +18,12 @@ class Equipamento extends BaseModel {
   // Criar equipamento (otimizado)
   static async createEquipamento(equipamentoData) {
     try {
+      console.log('🔍 EQUIPAMENTO: ===== CREATE EQUIPAMENTO INICIADO =====');
+      console.log('🔍 EQUIPAMENTO: COLLECTIONS:', COLLECTIONS);
+      console.log('🔍 EQUIPAMENTO: COLLECTIONS.EQUIPAMENTOS:', COLLECTIONS.EQUIPAMENTOS);
+      console.log('🔍 EQUIPAMENTO: Tipo de COLLECTIONS.EQUIPAMENTOS:', typeof COLLECTIONS.EQUIPAMENTOS);
+      console.log('🔍 EQUIPAMENTO: EquipamentoData:', equipamentoData);
+      
       // Validação mínima - apenas nome obrigatório
       this.validateEquipamentoRequiredFields(equipamentoData);
       
@@ -26,37 +32,38 @@ class Equipamento extends BaseModel {
         await this.validateEquipamentoUniqueFields(equipamentoData);
       }
       
+      console.log('🔍 EQUIPAMENTO: Chamando super.create com collection:', COLLECTIONS.EQUIPAMENTOS);
       const result = await super.create(COLLECTIONS.EQUIPAMENTOS, equipamentoData);
       
       // Limpar cache
       CacheHelper.equipamentos.clear();
       return result;
     } catch (error) {
+      console.error('❌ EQUIPAMENTO: Erro ao criar equipamento:', error);
       throw new Error(`Erro ao criar equipamento: ${error.message}`);
     }
   }
 
   // Validação de campos obrigatórios do equipamento (nome e tipo obrigatórios - otimizado)
   static validateEquipamentoRequiredFields(data) {
-    // Validação mínima - nome e tipo obrigatórios
+    // Validação mínima - apenas nome obrigatório
     if (!data.nome || data.nome.trim() === '') {
       throw new Error('Nome do equipamento é obrigatório');
     }
     
-    if (!data.tipo || data.tipo.trim() === '') {
-      throw new Error('Tipo do equipamento é obrigatório');
-    }
-    
-    const tiposValidos = ['MIKROTIK', 'MK CONCENTRADOR', 'RADIO PTP', 'AP', 'MIMOSA', 'OLT', 'ROTEADOR', 'OUTROS'];
-    if (!tiposValidos.includes(data.tipo)) {
-      throw new Error('Tipo do equipamento deve ser um dos valores válidos: ' + tiposValidos.join(', '));
+    // Validação de tipo apenas se fornecido
+    if (data.tipo && data.tipo.trim() !== '') {
+      const tiposValidos = ['MIKROTIK', 'MK CONCENTRADOR', 'RADIO PTP', 'AP', 'MIMOSA', 'OLT', 'ROTEADOR', 'SWITCH', 'FIREWALL', 'SERVIDOR', 'ANTENA', 'OUTROS'];
+      if (!tiposValidos.includes(data.tipo)) {
+        throw new Error('Tipo do equipamento deve ser um dos valores válidos: ' + tiposValidos.join(', '));
+      }
     }
     
     // Validações básicas apenas se os campos estiverem preenchidos
-    if (data.ipPublico && !ValidationHelper.validateIP(data.ipPublico)) {
+    if (data.ipPublico && data.ipPublico.trim() !== '' && !ValidationHelper.validateIP(data.ipPublico)) {
       throw new Error('IP público inválido');
     }
-    if (data.ipPrivado && !ValidationHelper.validateIP(data.ipPrivado)) {
+    if (data.ipPrivado && data.ipPrivado.trim() !== '' && !ValidationHelper.validateIP(data.ipPrivado)) {
       throw new Error('IP privado inválido');
     }
   }
@@ -126,7 +133,56 @@ class Equipamento extends BaseModel {
   static async validateEquipamentoUniqueFields(data, excludeId = null) {
     await ValidationHelper.validateUniqueFields(data, this, excludeId);
   }
+
+  // Método para obter estatísticas dos equipamentos
+  static async getStats() {
+    try {
+      const equipamentos = await this.findAllEquipamentos();
+      
+      const stats = {
+        total: equipamentos.length,
+        porStatus: {},
+        porTipo: {},
+        porFabricante: {},
+        porCidade: {},
+        porFuncao: {}
+      };
+
+      equipamentos.forEach(equipamento => {
+        // Contar por status
+        const status = equipamento.status || 'Desconhecido';
+        stats.porStatus[status] = (stats.porStatus[status] || 0) + 1;
+
+        // Contar por tipo
+        const tipo = equipamento.tipo || 'Desconhecido';
+        stats.porTipo[tipo] = (stats.porTipo[tipo] || 0) + 1;
+
+        // Contar por fabricante
+        const fabricante = equipamento.fabricante || 'Desconhecido';
+        stats.porFabricante[fabricante] = (stats.porFabricante[fabricante] || 0) + 1;
+
+        // Contar por cidade
+        const cidade = equipamento.endereco?.cidade || 'Não informado';
+        stats.porCidade[cidade] = (stats.porCidade[cidade] || 0) + 1;
+
+        // Contar por função (usando tipo como função)
+        const funcao = equipamento.tipo || 'Desconhecido';
+        stats.porFuncao[funcao] = (stats.porFuncao[funcao] || 0) + 1;
+      });
+
+      return stats;
+    } catch (error) {
+      console.error('Erro ao obter estatísticas dos equipamentos:', error);
+      return {
+        total: 0,
+        porStatus: {},
+        porTipo: {},
+        porFabricante: {},
+        porCidade: {},
+        porFuncao: {}
+      };
+    }
+  }
 }
 
-module.exports = Equipamento;
 module.exports = Equipamento;

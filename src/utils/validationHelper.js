@@ -30,7 +30,8 @@ class ValidationHelper {
     const checks = uniqueFields.filter(field => data[field]);
     
     for (const field of checks) {
-      const existing = await model.findAll({ [field]: data[field], ativo: true });
+      // Usar o método específico do modelo em vez do genérico
+      const existing = await model.findAllEquipamentos({ [field]: data[field], ativo: true });
       if (existing.length > 0 && (!excludeId || existing[0].id !== excludeId)) {
         throw new Error(`${field} já está em uso`);
       }
