@@ -15,6 +15,7 @@ const cidadesRoutes = require('./routes/cidades');
 // const dashboardRoutes = require('./routes/dashboard'); // Removido - dashboard agora usa dados diretos
 const configuracoesRoutes = require('./routes/configuracoes');
 const backupsRoutes = require('./routes/backups');
+const topologiaRoutes = require('./routes/topologia');
 
 const app = express();
 
@@ -48,6 +49,7 @@ app.use('/api/v1/cidades', cidadesRoutes);
 // app.use('/api/v1/dashboard', dashboardRoutes); // Removido - dashboard agora usa dados diretos
 app.use('/api/v1/configuracoes', configuracoesRoutes);
 app.use('/api/v1/backups', backupsRoutes);
+app.use('/api/v1/topologia', topologiaRoutes);
 
 // Rota de health check
 app.get('/api/v1/health', (req, res) => {
@@ -73,6 +75,7 @@ app.get('/', (req, res) => {
       // dashboard: '/api/v1/dashboard', // Removido - dashboard agora usa dados diretos
       configuracoes: '/api/v1/configuracoes',
       backups: '/api/v1/backups',
+      topologia: '/api/v1/topologia',
       health: '/api/v1/health'
     }
   });
