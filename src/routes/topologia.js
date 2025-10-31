@@ -5,6 +5,8 @@ const { authenticateToken } = require('../middleware/auth');
 
 // Coleção para armazenar posições da topologia
 const TOPOLOGY_COLLECTION = 'TOPOLOGIA';
+// Coleção para armazenar etiquetas das conexões
+const CONNECTION_LABELS_COLLECTION = 'TOPOLOGIA_CONEXOES';
 
 /**
  * @route GET /api/v1/topologia/posicoes
@@ -260,6 +262,177 @@ router.get('/equipamentos', async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Erro interno do servidor ao buscar equipamentos para topologia'
+    });
+  }
+});
+
+/**
+ * @route GET /api/v1/topologia/conexoes
+ * @desc Obtém todas as etiquetas das conexões da topologia
+ * @access Public
+ */
+router.get('/conexoes', async (req, res) => {
+  try {
+    console.log('🔍 TOPOLOGIA: Buscando etiquetas das conexões...');
+    
+    const snapshot = await db.collection(CONNECTION_LABELS_COLLECTION).get();
+    const labels = {};
+    
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      labels[doc.id] = data.label || '';
+    });
+    
+    console.log('✅ TOPOLOGIA: Etiquetas encontradas:', Object.keys(labels).length);
+    
+    res.json({
+      success: true,
+      data: labels
+    });
+  } catch (error) {
+    console.error('❌ TOPOLOGIA: Erro ao buscar etiquetas:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro interno do servidor ao buscar etiquetas das conexões'
+    });
+  }
+});
+
+/**
+ * @route POST /api/v1/topologia/conexoes
+ * @desc Salva ou atualiza a etiqueta de uma conexão
+ * @access Public
+ */
+router.post('/conexoes', async (req, res) => {
+  try {
+    const { connectionId, label } = req.body;
+    
+    // Validação
+    if (!connectionId || typeof connectionId !== 'string') {
+      return res.status(400).json({
+        success: false,
+        error: 'ID da conexão é obrigatório'
+      });
+    }
+    
+    if (label !== undefined && typeof label !== 'string') {
+      return res.status(400).json({
+        success: false,
+        error: 'Etiqueta deve ser uma string'
+      });
+    }
+    
+    const timestamp = new Date();
+    
+    console.log(`💾 TOPOLOGIA: Salvando etiqueta para conexão ${connectionId}:`, label);
+    
+    // Salvar ou atualizar etiqueta
+    const docRef = db.collection(CONNECTION_LABELS_COLLECTION).doc(connectionId);
+    
+    await docRef.set({
+      connectionId,
+      label: label || '',
+      lastUpdated: timestamp,
+      updatedBy: 'anonymous'
+    }, { merge: true });
+    
+    console.log(`✅ TOPOLOGIA: Etiqueta salva com sucesso para conexão ${connectionId}`);
+    
+    res.json({
+      success: true,
+      message: 'Etiqueta salva com sucesso',
+      data: {
+        connectionId,
+        label: label || '',
+        timestamp
+      }
+    });
+  } catch (error) {
+    console.error('❌ TOPOLOGIA: Erro ao salvar etiqueta:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro interno do servidor ao salvar etiqueta da conexão'
+    });
+  }
+});
+
+/**
+ * @route PUT /api/v1/topologia/conexoes/:connectionId
+ * @desc Atualiza a etiqueta de uma conexão específica
+ * @access Public
+ */
+router.put('/conexoes/:connectionId', async (req, res) => {
+  try {
+    const { connectionId } = req.params;
+    const { label } = req.body;
+    
+    // Validação
+    if (label !== undefined && typeof label !== 'string') {
+      return res.status(400).json({
+        success: false,
+        error: 'Etiqueta deve ser uma string'
+      });
+    }
+    
+    const timestamp = new Date();
+    
+    console.log(`💾 TOPOLOGIA: Atualizando etiqueta para conexão ${connectionId}:`, label);
+    
+    // Atualizar etiqueta
+    const docRef = db.collection(CONNECTION_LABELS_COLLECTION).doc(connectionId);
+    
+    await docRef.set({
+      connectionId,
+      label: label || '',
+      lastUpdated: timestamp,
+      updatedBy: 'anonymous'
+    }, { merge: true });
+    
+    console.log(`✅ TOPOLOGIA: Etiqueta atualizada com sucesso para conexão ${connectionId}`);
+    
+    res.json({
+      success: true,
+      message: 'Etiqueta atualizada com sucesso',
+      data: {
+        connectionId,
+        label: label || '',
+        timestamp
+      }
+    });
+  } catch (error) {
+    console.error(`❌ TOPOLOGIA: Erro ao atualizar etiqueta da conexão ${req.params.connectionId}:`, error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro interno do servidor ao atualizar etiqueta da conexão'
+    });
+  }
+});
+
+/**
+ * @route DELETE /api/v1/topologia/conexoes/:connectionId
+ * @desc Remove a etiqueta de uma conexão
+ * @access Public
+ */
+router.delete('/conexoes/:connectionId', async (req, res) => {
+  try {
+    const { connectionId } = req.params;
+    
+    console.log(`🗑️ TOPOLOGIA: Removendo etiqueta da conexão ${connectionId}`);
+    
+    const docRef = db.collection(CONNECTION_LABELS_COLLECTION).doc(connectionId);
+    await docRef.delete();
+    
+    console.log(`✅ TOPOLOGIA: Etiqueta removida com sucesso para conexão ${connectionId}`);
+    
+    res.json({
+      success: true,
+      message: 'Etiqueta removida com sucesso'
+    });
+  } catch (error) {
+    console.error(`❌ TOPOLOGIA: Erro ao remover etiqueta da conexão ${req.params.connectionId}:`, error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro interno do servidor ao remover etiqueta da conexão'
     });
   }
 });

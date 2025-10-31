@@ -321,6 +321,10 @@ class Database {
     if (!db) {
       console.warn('⚠️  FIND_WITH_PAGINATION: Firebase não configurado. Usando dados mock.');
       const mockData = this.getMockData(collection, filters);
+      // Se nenhum limite for fornecido (null/undefined) ou for 'all', retorne todos
+      if (limit === null || limit === undefined || limit === 'all') {
+        return { data: mockData, total: mockData.length };
+      }
       const paginatedData = mockData.slice(offset, offset + limit);
       return { data: paginatedData, total: mockData.length };
     }
@@ -344,9 +348,13 @@ class Database {
         }
       });
 
-      // Aplicar paginação
-      console.log('🔍 FIND_WITH_PAGINATION: Aplicando paginação - Limit:', limit, 'Offset:', offset);
-      query = query.limit(limit).offset(offset);
+      // Aplicar paginação somente se limite for numérico válido
+      if (limit !== null && limit !== undefined && limit !== 'all') {
+        console.log('🔍 FIND_WITH_PAGINATION: Aplicando paginação - Limit:', limit, 'Offset:', offset);
+        query = query.limit(limit).offset(offset);
+      } else {
+        console.log('🔍 FIND_WITH_PAGINATION: Sem paginação (retornando todos os registros)');
+      }
 
       console.log('🔍 FIND_WITH_PAGINATION: Executando query...');
       const snapshot = await query.get();

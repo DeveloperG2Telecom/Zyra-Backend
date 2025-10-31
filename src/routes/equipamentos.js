@@ -25,16 +25,18 @@ router.get('/', asyncHandler(async (req, res) => {
       throw new Error('Coleção EQUIPAMENTOS não está definida corretamente');
     }
     
-    // Parâmetros de paginação
+    // Parâmetros de paginação (permitir retornar todos com limit=all)
+    const rawLimit = req.query.limit;
+    const isAll = rawLimit === 'all' || rawLimit === undefined || rawLimit === null || rawLimit === '';
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
-    const offset = (page - 1) * limit;
+    const limit = isAll ? null : (parseInt(rawLimit) || 20);
+    const offset = isAll ? 0 : (page - 1) * limit;
     
     console.log('🚀 EQUIPAMENTOS ROUTE: Parâmetros calculados - Page:', page, 'Limit:', limit, 'Offset:', offset);
     
     // Buscar equipamentos com paginação
     console.log('🚀 EQUIPAMENTOS ROUTE: Chamando Database.findWithPagination...');
-    console.log('🚀 EQUIPAMENTOS ROUTE: Argumentos - Collection:', COLLECTIONS.EQUIPAMENTOS, 'Filters:', {}, 'Limit:', limit, 'Offset:', offset);
+    console.log('🚀 EQUIPAMENTOS ROUTE: Argumentos - Collection:', COLLECTIONS.EQUIPAMENTOS, 'Filters:', {}, 'Limit:', limit ?? 'all', 'Offset:', offset);
     
     const result = await Database.findWithPagination(COLLECTIONS.EQUIPAMENTOS, {}, limit, offset);
     
@@ -46,9 +48,9 @@ router.get('/', asyncHandler(async (req, res) => {
     
     // Calcular metadados de paginação
     const totalItems = result.total || 0;
-    const totalPages = Math.ceil(totalItems / limit);
-    const hasNextPage = page < totalPages;
-    const hasPrevPage = page > 1;
+    const totalPages = isAll ? 1 : Math.ceil(totalItems / (limit || totalItems || 1));
+    const hasNextPage = isAll ? false : page < totalPages;
+    const hasPrevPage = isAll ? false : page > 1;
     
     console.log('🚀 EQUIPAMENTOS ROUTE: Metadados de paginação calculados:', {
       totalItems,
@@ -61,10 +63,10 @@ router.get('/', asyncHandler(async (req, res) => {
       success: true,
       data: result.data || [],
       pagination: {
-        currentPage: page,
+        currentPage: isAll ? 1 : page,
         totalPages,
         totalItems,
-        itemsPerPage: limit,
+        itemsPerPage: isAll ? result.data.length : limit,
         hasNextPage,
         hasPrevPage
       },
