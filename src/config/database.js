@@ -19,6 +19,7 @@ const COLLECTIONS = {
   ALERTAS: 'alertas',
   CONFIGURACOES: 'configuracoes',
   BACKUPS: 'backups',
+  PING_HISTORICO: 'pingHistorico',
   // Dados mestres para configurações
   TIPOS_ACESSO: 'tiposAcesso',
   FUNCOES: 'funcoes',

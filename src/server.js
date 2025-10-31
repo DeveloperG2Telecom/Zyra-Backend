@@ -1,6 +1,9 @@
 const app = require('./app');
 require('dotenv').config();
 
+// Importar serviço de monitoramento
+const { iniciarMonitoramento } = require('./services/monitoramentoService');
+
 const PORT = process.env.PORT || 3002;
 
 // Inicializar servidor
@@ -9,6 +12,9 @@ const server = app.listen(PORT, () => {
   console.log(`📊 Ambiente: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔗 URL: http://localhost:${PORT}`);
   console.log(`📋 Health Check: http://localhost:${PORT}/api/v1/health`);
+  
+  // Inicializar serviço de monitoramento
+  iniciarMonitoramento();
 });
 
 // Tratamento de erros não capturados

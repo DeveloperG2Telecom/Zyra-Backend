@@ -9,19 +9,11 @@ const router = express.Router();
 // GET /equipamentos - Listar equipamentos com paginação
 router.get('/', asyncHandler(async (req, res) => {
   try {
-    console.log('🚀 EQUIPAMENTOS ROUTE: ===== INICIANDO REQUISIÇÃO =====');
-    console.log('🚀 EQUIPAMENTOS ROUTE: Query params recebidos:', req.query);
-    console.log('🚀 EQUIPAMENTOS ROUTE: Headers:', req.headers);
-    
     const databaseModule = require('../config/database');
     const { Database, COLLECTIONS } = databaseModule;
-    console.log('🚀 EQUIPAMENTOS ROUTE: Database e COLLECTIONS carregados');
-    console.log('🚀 EQUIPAMENTOS ROUTE: COLLECTIONS.EQUIPAMENTOS:', COLLECTIONS.EQUIPAMENTOS);
-    console.log('🚀 EQUIPAMENTOS ROUTE: Tipo de COLLECTIONS.EQUIPAMENTOS:', typeof COLLECTIONS.EQUIPAMENTOS);
     
     // Validar se a coleção está definida
     if (!COLLECTIONS.EQUIPAMENTOS || typeof COLLECTIONS.EQUIPAMENTOS !== 'string') {
-      console.error('❌ EQUIPAMENTOS ROUTE: Coleção EQUIPAMENTOS inválida:', COLLECTIONS.EQUIPAMENTOS);
       throw new Error('Coleção EQUIPAMENTOS não está definida corretamente');
     }
     
@@ -32,32 +24,14 @@ router.get('/', asyncHandler(async (req, res) => {
     const limit = isAll ? null : (parseInt(rawLimit) || 20);
     const offset = isAll ? 0 : (page - 1) * limit;
     
-    console.log('🚀 EQUIPAMENTOS ROUTE: Parâmetros calculados - Page:', page, 'Limit:', limit, 'Offset:', offset);
-    
     // Buscar equipamentos com paginação
-    console.log('🚀 EQUIPAMENTOS ROUTE: Chamando Database.findWithPagination...');
-    console.log('🚀 EQUIPAMENTOS ROUTE: Argumentos - Collection:', COLLECTIONS.EQUIPAMENTOS, 'Filters:', {}, 'Limit:', limit ?? 'all', 'Offset:', offset);
-    
     const result = await Database.findWithPagination(COLLECTIONS.EQUIPAMENTOS, {}, limit, offset);
-    
-    console.log('🚀 EQUIPAMENTOS ROUTE: ===== RESULTADO RECEBIDO =====');
-    console.log('🚀 EQUIPAMENTOS ROUTE: Resultado completo:', JSON.stringify(result, null, 2));
-    console.log('🚀 EQUIPAMENTOS ROUTE: Total de itens:', result.total);
-    console.log('🚀 EQUIPAMENTOS ROUTE: Dados encontrados:', result.data?.length || 0);
-    console.log('🚀 EQUIPAMENTOS ROUTE: Primeiros 3 itens:', result.data?.slice(0, 3) || 'Nenhum item');
     
     // Calcular metadados de paginação
     const totalItems = result.total || 0;
     const totalPages = isAll ? 1 : Math.ceil(totalItems / (limit || totalItems || 1));
     const hasNextPage = isAll ? false : page < totalPages;
     const hasPrevPage = isAll ? false : page > 1;
-    
-    console.log('🚀 EQUIPAMENTOS ROUTE: Metadados de paginação calculados:', {
-      totalItems,
-      totalPages,
-      hasNextPage,
-      hasPrevPage
-    });
     
     const response = {
       success: true,
@@ -73,16 +47,10 @@ router.get('/', asyncHandler(async (req, res) => {
       message: `Encontrados ${result.data?.length || 0} equipamentos na página ${page}`
     };
     
-    console.log('🚀 EQUIPAMENTOS ROUTE: ===== ENVIANDO RESPOSTA =====');
-    console.log('🚀 EQUIPAMENTOS ROUTE: Resposta final:', JSON.stringify(response, null, 2));
-    
     res.json(response);
     
   } catch (error) {
-    console.error('❌ EQUIPAMENTOS ROUTE: ===== ERRO CAPTURADO =====');
-    console.error('❌ EQUIPAMENTOS ROUTE: Erro:', error.message);
-    console.error('❌ EQUIPAMENTOS ROUTE: Stack trace:', error.stack);
-    
+    console.error('❌ Erro ao buscar equipamentos:', error.message);
     res.status(500).json({
       success: false,
       error: error.message,
@@ -100,20 +68,17 @@ router.get('/:id', asyncHandler(async (req, res) => {
 
 // POST /equipamentos - Criar novo equipamento
 router.post('/', validate('equipamento'), asyncHandler(async (req, res) => {
-  console.log('🔍 BACKEND: Recebida requisição POST /equipamentos');
-  console.log('🔍 BACKEND: Dados recebidos:', req.body);
-  
   const equipamento = await Equipamento.createEquipamento(req.body);
-  console.log('✅ BACKEND: Equipamento criado com sucesso:', equipamento);
+  
+  // Atualizar cache do monitoramento
+  const { atualizarListaEquipamentos } = require('../services/monitoramentoService');
+  atualizarListaEquipamentos().catch(err => console.error('Erro ao atualizar cache:', err.message));
   
   ResponseHelper.success(res, equipamento, null, 201);
 }));
 
 // PUT /equipamentos/:id - Atualizar equipamento (SIMPLIFICADO)
 router.put('/:id', asyncHandler(async (req, res) => {
-  console.log('🔍 BACKEND: Recebida requisição PUT /equipamentos/' + req.params.id);
-  console.log('🔍 BACKEND: Dados para atualizar:', req.body);
-  
   try {
     const { Database, COLLECTIONS } = require('../config/database');
     const { id } = req.params;
@@ -128,8 +93,6 @@ router.put('/:id', asyncHandler(async (req, res) => {
       });
     }
     
-    console.log('🔍 BACKEND: Equipamento encontrado:', equipamentoExistente.nome);
-    
     // Atualizar no banco
     const dadosAtualizados = {
       ...req.body,
@@ -138,7 +101,9 @@ router.put('/:id', asyncHandler(async (req, res) => {
     
     await Database.update(COLLECTIONS.EQUIPAMENTOS, id, dadosAtualizados);
     
-    console.log('✅ BACKEND: Equipamento atualizado com sucesso');
+    // Atualizar cache do monitoramento
+    const { atualizarListaEquipamentos } = require('../services/monitoramentoService');
+    atualizarListaEquipamentos().catch(err => console.error('Erro ao atualizar cache:', err.message));
     
     res.json({
       success: true,
@@ -147,7 +112,7 @@ router.put('/:id', asyncHandler(async (req, res) => {
     });
     
   } catch (error) {
-    console.error('❌ BACKEND: Erro ao atualizar equipamento:', error);
+    console.error('❌ Erro ao atualizar equipamento:', error.message);
     res.status(500).json({
       success: false,
       error: error.message,
@@ -158,8 +123,6 @@ router.put('/:id', asyncHandler(async (req, res) => {
 
 // DELETE /equipamentos/:id - Excluir equipamento (SIMPLIFICADO)
 router.delete('/:id', asyncHandler(async (req, res) => {
-  console.log('🔍 BACKEND: Recebida requisição DELETE /equipamentos/' + req.params.id);
-  
   try {
     const { Database, COLLECTIONS } = require('../config/database');
     const { id } = req.params;
@@ -174,12 +137,12 @@ router.delete('/:id', asyncHandler(async (req, res) => {
       });
     }
     
-    console.log('🔍 BACKEND: Equipamento encontrado para deletar:', equipamentoExistente.nome);
-    
     // Deletar do banco (soft delete)
     await Database.delete(COLLECTIONS.EQUIPAMENTOS, id);
     
-    console.log('✅ BACKEND: Equipamento deletado com sucesso');
+    // Atualizar cache do monitoramento
+    const { atualizarListaEquipamentos } = require('../services/monitoramentoService');
+    atualizarListaEquipamentos().catch(err => console.error('Erro ao atualizar cache:', err.message));
     
     res.json({
       success: true,
@@ -188,7 +151,7 @@ router.delete('/:id', asyncHandler(async (req, res) => {
     });
     
   } catch (error) {
-    console.error('❌ BACKEND: Erro ao deletar equipamento:', error);
+    console.error('❌ Erro ao deletar equipamento:', error.message);
     res.status(500).json({
       success: false,
       error: error.message,

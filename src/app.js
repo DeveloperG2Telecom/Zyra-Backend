@@ -16,6 +16,8 @@ const cidadesRoutes = require('./routes/cidades');
 const configuracoesRoutes = require('./routes/configuracoes');
 const backupsRoutes = require('./routes/backups');
 const topologiaRoutes = require('./routes/topologia');
+const monitoramentoRoutes = require('./routes/monitoramento');
+const pingHistoricoRoutes = require('./routes/pingHistorico');
 
 const app = express();
 
@@ -50,6 +52,8 @@ app.use('/api/v1/cidades', cidadesRoutes);
 app.use('/api/v1/configuracoes', configuracoesRoutes);
 app.use('/api/v1/backups', backupsRoutes);
 app.use('/api/v1/topologia', topologiaRoutes);
+app.use('/api/v1/monitoramento', monitoramentoRoutes);
+app.use('/api/v1/ping-historico', pingHistoricoRoutes);
 
 // Rota de health check
 app.get('/api/v1/health', (req, res) => {
@@ -76,6 +80,8 @@ app.get('/', (req, res) => {
       configuracoes: '/api/v1/configuracoes',
       backups: '/api/v1/backups',
       topologia: '/api/v1/topologia',
+      monitoramento: '/api/v1/monitoramento',
+      pingHistorico: '/api/v1/ping-historico',
       health: '/api/v1/health'
     }
   });
