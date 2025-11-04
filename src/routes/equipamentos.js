@@ -68,13 +68,26 @@ router.get('/:id', asyncHandler(async (req, res) => {
 
 // POST /equipamentos - Criar novo equipamento
 router.post('/', validate('equipamento'), asyncHandler(async (req, res) => {
-  const equipamento = await Equipamento.createEquipamento(req.body);
-  
-  // Atualizar cache do monitoramento
-  const { atualizarListaEquipamentos } = require('../services/monitoramentoService');
-  atualizarListaEquipamentos().catch(err => console.error('Erro ao atualizar cache:', err.message));
-  
-  ResponseHelper.success(res, equipamento, null, 201);
+  try {
+    const equipamento = await Equipamento.createEquipamento(req.body);
+    
+    // Atualizar cache do monitoramento
+    const { atualizarListaEquipamentos } = require('../services/monitoramentoService');
+    atualizarListaEquipamentos().catch(err => console.error('Erro ao atualizar cache:', err.message));
+    
+    ResponseHelper.success(res, equipamento, null, 201);
+  } catch (error) {
+    // Verificar se é erro de duplicata e retornar mensagem específica
+    if (error.message && (error.message.includes('já está em uso') || error.message.includes('duplicado'))) {
+      return res.status(409).json({
+        success: false,
+        error: error.message,
+        code: 'DUPLICATE',
+        data: null
+      });
+    }
+    throw error; // Re-lançar outros erros para serem tratados pelo asyncHandler
+  }
 }));
 
 // PUT /equipamentos/:id - Atualizar equipamento (SIMPLIFICADO)
