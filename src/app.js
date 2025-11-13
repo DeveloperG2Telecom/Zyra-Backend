@@ -21,6 +21,10 @@ const pingHistoricoRoutes = require('./routes/pingHistorico');
 
 const app = express();
 
+// Configurar trust proxy para funcionar corretamente na Vercel
+// Isso permite que o Express confie nos headers do proxy reverso (X-Forwarded-For, etc)
+app.set('trust proxy', true);
+
 // Middlewares de segurança
 app.use(helmet());
 app.use(cors({
