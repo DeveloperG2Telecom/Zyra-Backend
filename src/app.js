@@ -25,13 +25,56 @@ const app = express();
 // Isso permite que o Express confie nos headers do proxy reverso (X-Forwarded-For, etc)
 app.set('trust proxy', true);
 
-// Middlewares de segurança
-app.use(helmet());
+// Configurar CORS ANTES de outros middlewares para garantir que preflight requests sejam tratados
+const allowedOrigins = process.env.NODE_ENV === 'production' 
+  ? ['https://zyra.g2telecom.com', 'https://zyra-front-eta.vercel.app'] 
+  : ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:10000', 'null'];
+
+// Handler para requisições OPTIONS (preflight)
+app.options('*', cors({
+  origin: function (origin, callback) {
+    if (!origin && process.env.NODE_ENV !== 'production') {
+      return callback(null, true);
+    }
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Permitir preflight mesmo se origin não estiver na lista (para debug)
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+  maxAge: 86400
+}));
+
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://zyra.g2telecom.com', 'https://zyra-front-eta.vercel.app'] 
-    : ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:10000', 'null'], // Permite arquivos locais
-  credentials: true
+  origin: function (origin, callback) {
+    // Permitir requisições sem origin (mobile apps, Postman, etc) em desenvolvimento
+    if (!origin && process.env.NODE_ENV !== 'production') {
+      return callback(null, true);
+    }
+    
+    // Verificar se a origin está na lista de permitidas
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      // Log para debug em produção
+      console.log(`CORS: Origin não permitida: ${origin}`);
+      callback(new Error('Não permitido pelo CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  maxAge: 86400 // 24 horas
+}));
+
+// Middlewares de segurança - configurar Helmet para não interferir com CORS
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  crossOriginEmbedderPolicy: false
 }));
 
 // Rate limiting

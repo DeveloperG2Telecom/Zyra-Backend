@@ -29,6 +29,10 @@ const apiLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => {
+    // Pular rate limiting para requisições OPTIONS (preflight CORS)
+    return req.method === 'OPTIONS';
+  }
 });
 
 // Rate limiter para criação de recursos
