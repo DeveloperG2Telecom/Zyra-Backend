@@ -29,7 +29,7 @@ app.set('trust proxy', true);
 app.use(helmet());
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://zyra.g2telecom.com'] 
+    ? ['https://zyra.g2telecom.com', 'https://zyra-front-eta.vercel.app'] 
     : ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:10000', 'null'], // Permite arquivos locais
   credentials: true
 }));
