@@ -26,9 +26,22 @@ const app = express();
 app.set('trust proxy', true);
 
 // Configurar CORS ANTES de outros middlewares para garantir que preflight requests sejam tratados
-const allowedOrigins = process.env.NODE_ENV === 'production' 
-  ? ['https://zyra.g2telecom.com', 'https://zyra-front-eta.vercel.app'] 
-  : ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:10000', 'null'];
+// Usar variável de ambiente CORS_ORIGINS se disponível, caso contrário usar valores padrão
+const getAllowedOrigins = () => {
+  if (process.env.CORS_ORIGINS) {
+    // Se CORS_ORIGINS estiver definido, usar ele (separado por vírgula)
+    return process.env.CORS_ORIGINS.split(',').map(origin => origin.trim());
+  }
+  
+  // Valores padrão baseados no ambiente
+  if (process.env.NODE_ENV === 'production') {
+    return ['https://zyra.g2telecom.com', 'https://zyra-front-eta.vercel.app'];
+  }
+  
+  return ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:10000', 'null'];
+};
+
+const allowedOrigins = getAllowedOrigins();
 
 // Handler para requisições OPTIONS (preflight)
 app.options('*', cors({

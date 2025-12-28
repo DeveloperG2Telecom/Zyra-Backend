@@ -3,11 +3,17 @@
   "version": "1.0.0",
   "description": "Backend do Sistema Zyra - G2 Telecom",
   "main": "src/server.js",
+  "bin": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "test": "jest",
-    "serve-test": "node serve-test-page.js"
+    "serve-test": "node serve-test-page.js",
+    "build:exe": "node build-exe.js",
+    "build:exe:pkg": "npx pkg src/server.js --targets node18-win-x64,node18-linux-x64,node18-macos-x64 --output-path dist",
+    "build:exe:win": "npx pkg src/server.js --targets node18-win-x64 --output-path dist --output zyra-backend.exe",
+    "build:exe:linux": "npx pkg src/server.js --targets node18-linux-x64 --output-path dist --output zyra-backend",
+    "build:exe:mac": "npx pkg src/server.js --targets node18-macos-x64 --output-path dist --output zyra-backend"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -24,7 +30,8 @@
   },
   "devDependencies": {
     "jest": "^29.7.0",
-    "nodemon": "^3.0.1"
+    "nodemon": "^3.0.1",
+    "pkg": "^5.8.1"
   },
   "keywords": [
     "zyra",
@@ -33,5 +40,19 @@
     "firebase"
   ],
   "author": "G2 Telecom",
-  "license": "MIT"
+  "license": "MIT",
+  "pkg": {
+    "scripts": [
+      "src/**/*.js"
+    ],
+    "assets": [
+      "env.example"
+    ],
+    "targets": [
+      "node18-win-x64",
+      "node18-linux-x64",
+      "node18-macos-x64"
+    ],
+    "outputPath": "dist"
+  }
 }

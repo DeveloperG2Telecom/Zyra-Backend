@@ -5,12 +5,13 @@ require('dotenv').config();
 const initializeFirebase = () => {
   // Verificar se as variáveis de ambiente estão configuradas
   if (!process.env.FIREBASE_PROJECT_ID) {
-    console.warn('⚠️  Firebase não configurado. Usando modo de desenvolvimento sem Firebase.');
-    return {
-      db: null,
-      storage: null,
-      admin: null
-    };
+    console.error('❌ ERRO: Firebase não está configurado!');
+    console.error('Configure as variáveis de ambiente do Firebase no arquivo .env:');
+    console.error('  - FIREBASE_PROJECT_ID');
+    console.error('  - FIREBASE_PRIVATE_KEY');
+    console.error('  - FIREBASE_CLIENT_EMAIL');
+    console.error('  - FIREBASE_CLIENT_ID');
+    throw new Error('Firebase não está configurado. Configure as variáveis de ambiente do Firebase.');
   }
 
   if (!admin.apps.length) {
@@ -34,11 +35,7 @@ const initializeFirebase = () => {
     } catch (error) {
       console.error('❌ Erro ao inicializar Firebase:', error.message);
       console.error('🔍 Detalhes do erro:', error);
-      return {
-        db: null,
-        storage: null,
-        admin: null
-      };
+      throw new Error(`Erro ao inicializar Firebase: ${error.message}`);
     }
   }
 

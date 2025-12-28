@@ -17,20 +17,7 @@ const authenticateToken = async (req, res, next) => {
       });
     }
 
-    // Suporte para token mock durante desenvolvimento
-    if (token.startsWith('mock-token-')) {
-      req.user = {
-        id: 'mock-user-id',
-        email: 'dev@example.com',
-        nome: 'Usuário Desenvolvimento',
-        ativo: true,
-        isAdmin: () => true,
-        isUser: () => true
-      };
-      return next();
-    }
-
-    // Verificar token JWT real
+    // Verificar token JWT
     const jwtSecret = process.env.JWT_SECRET || 'zyra-super-secret-jwt-key-for-development-only';
     const decoded = jwt.verify(token, jwtSecret);
     
